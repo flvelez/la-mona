@@ -9,7 +9,7 @@ services:
     name: la-mona
     runtime: node
     plan: free
-    region: oregon
+    region: ohio          # EE. UU. este, más cerca de Ecuador que Oregon
     buildCommand: npm ci --omit=dev
     startCommand: node servidor/index.js
     healthCheckPath: /salud

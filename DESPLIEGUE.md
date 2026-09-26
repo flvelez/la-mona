@@ -1,114 +1,117 @@
-# Desplegar La Mona en Fly.io
+# Desplegar La Mona
 
-## La regla que no se puede romper
+El juego es un **proceso Node de siempre**, no una función sin estado. Las
+salas viven en memoria, así que hay una regla que no se puede romper:
 
-**Una sola máquina.** Las salas viven en memoria del proceso. Si Fly levanta
-dos máquinas, dos jugadores con el mismo código pueden caer en máquinas
-distintas y no verse: uno ve la sala vacía y el otro cree que la creó bien.
-El fallo es intermitente y desconcertante.
+> **UNA SOLA INSTANCIA.** Si la plataforma levanta dos, dos jugadores con el
+> mismo código pueden caer en instancias distintas y no verse. El fallo es
+> intermitente y desconcertante.
 
-Por eso `fly.toml` trae `max_machines_running = 1`, y todo despliegue va con
-`--ha=false`. Para comprobarlo en cualquier momento:
-
-```bash
-fly status          # tiene que salir UNA sola máquina
-curl https://TU-APP.fly.dev/salud
-# {"ok":true,"activo":123,"maquina":"3d8d...","salas":2}
-```
-
-Si dos jugadores abren `/salud` y ven **`maquina` distinta**, ahí está el
-problema: sobra una máquina. `fly scale count 1`.
-
-## Pasos
-
-### 1. Instalar flyctl (una vez)
+Para comprobarlo en cualquier momento, que dos jugadores abran `/salud`:
 
 ```bash
-curl -L https://fly.io/install.sh | sh
+curl https://TU-APP/salud
+# {"ok":true,"activo":123,"maquina":"...","salas":2}
 ```
 
-Añade la línea que te indique a tu `~/.zshrc` y abre una terminal nueva.
+Si el campo `maquina` no coincide entre ellos, hay más de una instancia.
 
-### 2. Entrar a tu cuenta
+---
+
+# Opción A: Render (plan gratuito, sin tarjeta)
+
+Render **no escala más allá de una instancia** en el plan gratuito, que es
+justo lo que este juego necesita. Y cuenta los mensajes WebSocket como
+tráfico, así que el latido del servidor (cada 25 s) **evita que se duerma
+mientras alguien esté jugando**.
+
+Pegas honestas:
+- Se duerme a los 15 minutos sin nadie conectado, y despertar tarda **~1
+  minuto**. El primer jugador espera.
+- Render avisa de que puede reiniciar un servicio gratuito en cualquier
+  momento: eso cortaría una partida en curso (los jugadores vuelven a la
+  entrada con un aviso, no se quedan colgados).
+- 750 horas de instancia al mes por espacio de trabajo.
+
+### 1. Subir el código a GitHub
+
+El proyecto ya es un repositorio Git con todo confirmado. Falta publicarlo:
+
+1. Crea una cuenta en https://github.com si no la tienes.
+2. Crea un repositorio nuevo **vacío** (sin README ni .gitignore), por ejemplo
+   `la-mona`.
+3. Copia la URL que te da y, en la carpeta del proyecto:
 
 ```bash
-fly auth login
+git remote add origin https://github.com/TU-USUARIO/la-mona.git
+git branch -M main
+git push -u origin main
 ```
 
-### 3. Elegir el nombre de la app
+### 2. Crear el servicio en Render
 
-`la-mona` seguramente ya esté tomado: los nombres son globales. Abre
-`fly.toml` y cambia la primera línea por algo tuyo:
+1. Entra a https://render.com y regístrate (puedes usar tu cuenta de GitHub).
+2. **New → Blueprint**.
+3. Elige el repositorio `la-mona`. Render lee `render.yaml` y configura todo
+   solo: plan gratuito, una instancia, y `/salud` como comprobación.
+4. **Apply**. El primer despliegue tarda unos minutos.
 
-```toml
-app = "la-mona-ec"
-```
+Te quedará una URL tipo `https://la-mona.onrender.com`.
 
-### 4. Crear la app y desplegar
+### 3. Actualizar después
 
 ```bash
-fly launch --no-deploy --copy-config --name la-mona-ec --region iad
-fly deploy --ha=false
+git add -A
+git commit -m "lo que cambiaste"
+git push
 ```
 
-- `--copy-config` usa el `fly.toml` que ya está en el proyecto; si te pregunta
-  si quiere sobrescribirlo, di que **no**.
-- `--ha=false` es lo que evita que levante dos máquinas.
-- `iad` es Ashburn (EE. UU. este). Bogotá (`bog`) quedó deprecada y Fly ya no
-  deja crear máquinas ahí. Para un juego por turnos la latencia apenas importa;
-  `gru` (São Paulo) es la única opción sudamericana si la prefieres.
-  `fly platform regions` lista las disponibles.
+Render redespliega solo en cada `push`.
 
-Fly compila la imagen en sus servidores, así que **no necesitas Docker**.
+### Ajustes
 
-### 5. Probar
-
-```bash
-fly open          # abre la app en el navegador
-fly logs          # los registros en vivo
-fly status        # confirma que hay UNA máquina
-```
-
-Crea una sala desde tu celular y entra con el código desde otro. Ya no hace
-falta estar en la misma WiFi.
-
-## Ajustes
-
-Se cambian sin volver a desplegar:
-
-```bash
-fly secrets set SEGUNDOS_POR_TURNO=60    # reinicia la máquina al aplicarlo
-```
+En Render: **Environment → Environment Variables**.
 
 | Variable | Por defecto | Para qué |
 |---|---|---|
-| `PORT` | 3000 | Lo pone Fly; no lo toques |
+| `PORT` | lo pone Render | No lo toques |
 | `SEGUNDOS_POR_TURNO` | 45 | Tiempo por turno; `0` desactiva el turno automático |
 | `MINUTOS_SALA_VACIA` | 10 | Cuánto sobrevive una sala sin nadie conectado |
 
+---
+
+# Opción B: Fly.io (necesita tarjeta)
+
+La app ya estuvo desplegada aquí en `la-mona.fly.dev`. Fly terminó su periodo
+de prueba, así que hace falta añadir una tarjeta en https://fly.io/trial para
+reactivarla. Con `auto_stop_machines = "stop"` (lo que trae `fly.toml`) la
+máquina solo corre mientras alguien juega.
+
+```bash
+fly deploy --ha=false
+```
+
+**El `--ha=false` siempre**: sin él, Fly levanta dos máquinas y se rompen las
+salas. Compruébalo con `fly status`; si algún día aparecen dos,
+`fly scale count 1`.
+
+Región: `iad` (Ashburn, EE. UU. este). Bogotá (`bog`) quedó deprecada y Fly ya
+no deja crear máquinas ahí. `gru` (São Paulo) es la única opción sudamericana.
+
+---
+
 ## Qué pasa al redesplegar
 
-Fly manda `SIGTERM`. El servidor cierra los WebSockets y suelta el puerto, y
-**los jugadores reconectan solos** a la versión nueva gracias al reintento del
-cliente. Pero ojo: **las partidas en curso se pierden**, porque el estado está
-en memoria. Redespliega cuando no haya nadie jugando, o avisa antes.
-
-## Sobre el arranque en frío
-
-`auto_stop_machines = "stop"` apaga la máquina cuando nadie juega, y la
-enciende sola cuando alguien entra. Ahorra, pero **el primer jugador espera
-unos segundos**. Si prefieres que esté siempre encendida:
-
-```toml
-auto_stop_machines = false
-min_machines_running = 1
-```
+La plataforma reinicia el proceso, y **las partidas en curso se pierden**
+porque el estado vive en memoria. Los jugadores no se quedan colgados: vuelven
+a la entrada con el aviso *"Esa sala ya no existe"*. Aun así, redespliega
+cuando no haya nadie jugando.
 
 ## Si algo falla
 
 | Síntoma | Causa probable |
 |---|---|
-| La página carga pero dice "Reconectando…" sin parar | Falta `force_https = true`, o el navegador intenta `ws://` sobre `https://` |
-| Dos jugadores no se ven con el mismo código | Hay más de una máquina: `fly status` y `fly scale count 1` |
-| Se corta la conexión sola cada minuto | El latido del servidor no está llegando: revisa `fly logs` |
-| `fly deploy` levanta dos máquinas | Faltó `--ha=false` |
+| "Reconectando…" sin parar | El navegador intenta `ws://` sobre `https://`; la plataforma debe servir TLS |
+| Dos jugadores no se ven con el mismo código | Hay más de una instancia: compara el campo `maquina` de `/salud` |
+| El primer jugador espera un minuto | El servicio estaba dormido. Normal en el plan gratuito de Render |
+| "Esa sala ya no existe" a mitad de partida | El servicio se reinició. Creen una sala nueva |
