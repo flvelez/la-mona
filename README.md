@@ -3,7 +3,9 @@
 Juego de naipes de la costa ecuatoriana, para jugar en línea entre 2 y 4
 personas que se unen a una sala con un código.
 
-**Desplegar: ver [DESPLIEGUE.md](DESPLIEGUE.md)** — Render (gratis, sin tarjeta) o Fly.io.
+**Jugar: https://la-mona-ri4e.onrender.com**
+
+Desplegado en Render. Ver [DESPLIEGUE.md](DESPLIEGUE.md).
 
 El reglamento implementado está en **[REGLAS.md](REGLAS.md)**.
 
@@ -65,7 +67,7 @@ Tres decisiones que sostienen todo lo demás:
 - [x] Lobby jugable en el navegador
 - [x] Mesa jugable con toques, jugadores alrededor y cartas ajenas ocultas
 - [x] Aguanta desconexiones: el mando pasa solo, y se vuelve al lobby al terminar
-- [x] Listo para desplegar: `render.yaml` y `fly.toml` — ver [DESPLIEGUE.md](DESPLIEGUE.md)
+- [x] **Desplegado en https://la-mona-ri4e.onrender.com** — ver [DESPLIEGUE.md](DESPLIEGUE.md)
 - [ ] Probar en un celular de verdad (sólo se verificó hasta 606px, el mínimo de Chrome)
 - [x] Animación de las cartas al moverse
 - [x] Cuenta atrás del turno en vivo

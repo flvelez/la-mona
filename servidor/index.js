@@ -35,7 +35,7 @@ function servirEstatico(req, res) {
     res.end(JSON.stringify({
       ok: true,
       activo: Math.round(process.uptime()),
-      maquina: process.env.FLY_MACHINE_ID ?? 'local',
+      maquina: process.env.FLY_MACHINE_ID ?? process.env.RENDER_INSTANCE_ID ?? 'local',
       salas: servidorActual?.registro.salas.size ?? 0,
     }));
     return;

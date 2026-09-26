@@ -387,7 +387,7 @@ export class Mesa {
     const e = p.ultimoEvento;
     if (!e) return ($('bitacora').innerHTML = '');
     const quien = p.config.nombres[e.jugador];
-    const carta = `${e.carta.nombre}${ICONOS[e.carta.palo] ?? ''}`;
+    const carta = e.carta.mona ? 'La Mona 🃏' : `${e.carta.nombre}${ICONOS[e.carta.palo] ?? ''}`;
     let texto;
     if (e.tipo === 'abierto') texto = `${quien} botó ${carta}`;
     else if (e.tipo === 'capturar') texto = `${quien} levantó ${e.capturadas} cartas con ${carta}`;
