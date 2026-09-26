@@ -377,7 +377,7 @@ export class Mesa {
     for (const accion of acciones) {
       const boton = document.createElement('button');
       boton.className = `btn-${claseDeAccion(accion.tipo)}`;
-      boton.textContent = etiquetaDeAccion(accion, p);
+      boton.textContent = etiquetaDeAccion(accion, p, this.partida.mesa);
       boton.onclick = () => this.enviar(accion);
       cont.appendChild(boton);
     }
@@ -472,14 +472,23 @@ function claseDeAccion(tipo) {
   return { capturar: 'llevar', formar: 'formar', fila: 'fila', abierto: 'botar' }[tipo];
 }
 
-function etiquetaDeAccion(accion, p) {
+function etiquetaDeAccion(accion, p, mesa = []) {
   // Sólo se aclara el valor del As cuando de verdad hay ambigüedad.
   const carta = p.miMano.find((c) => c.id === accion.cartaId);
   const conAs = carta && !carta.mona && carta.valor === 1 ? ` (As = ${accion.valorCarta})` : '';
   if (accion.tipo === 'abierto') return 'BOTAR A LA MESA';
   if (accion.tipo === 'capturar') return `LLEVAR${conAs}`;
   if (accion.tipo === 'formar') return `FORMAR ${accion.valor}${conAs}`;
-  return `FILA DE ${accion.valor}${conAs}`;
+
+  // Si ya hay una pila de ese valor, lo que estás haciendo es apilar encima;
+  // "fila" es para cuando la creas de cero.
+  const yaExiste = (accion.montones ?? []).some((id) => {
+    const m = mesa.find((x) => x.id === id);
+    return m && m.tipo !== 'suelta' && m.valor === accion.valor;
+  });
+  return yaExiste
+    ? `APILAR EN ${accion.valor}${conAs}`
+    : `FILA DE ${accion.valor}${conAs}`;
 }
 
 function escapar(texto) {
