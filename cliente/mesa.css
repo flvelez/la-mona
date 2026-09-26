@@ -1,0 +1,401 @@
+/* ---------------------------------------------------------------- */
+/* La mesa: asientos alrededor, tus cartas abajo, el tapete al centro */
+/* ---------------------------------------------------------------- */
+
+#pantalla-mesa {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+  background: none;
+  border: none;
+  min-height: calc(100vh - 70px);
+}
+
+/* Los botones de acción se quedan pegados abajo: en un celular el tapete
+   empuja el contenido y, si no, la jugada queda fuera de la pantalla. */
+.panel-inferior {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, var(--fondo) 62%, rgba(16, 36, 26, 0));
+}
+
+.panel-inferior .btn-limpiar { width: auto; margin: 0; padding: 7px 14px; font-size: .75rem; }
+
+.barra-superior {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: .78rem;
+  color: var(--tenue);
+}
+.barra-superior strong { color: var(--texto); }
+
+.btn-sonido {
+  width: auto;
+  margin: 0;
+  padding: 5px 9px;
+  font-size: .9rem;
+  line-height: 1;
+  background: none;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.btn-sonido.apagado { opacity: .5; }
+
+.tapete {
+  position: relative;
+  display: grid;
+  grid-template-areas:
+    ".   arriba  ."
+    "izq centro  der"
+    ".   yo      .";
+  grid-template-columns: minmax(54px, .8fr) 3fr minmax(54px, .8fr);
+  grid-template-rows: auto minmax(160px, 1fr) auto;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 20px;
+  background:
+    radial-gradient(ellipse at 50% 45%, #1d7a49 0%, #0f5230 55%, #0a3a22 100%);
+  border: 2px solid #0a2a19;
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, .45);
+  min-height: 420px;
+}
+
+.asiento-arriba { grid-area: arriba; }
+.asiento-izq    { grid-area: izq; }
+.asiento-der    { grid-area: der; }
+.zona-centro    { grid-area: centro; }
+
+/* ------------------------------ asientos ------------------------- */
+
+.asiento {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 5px;
+  border-radius: 12px;
+  border: 1.5px solid transparent;
+  transition: border-color .25s, background .25s;
+  min-width: 0;
+}
+.asiento.enturno {
+  border-color: var(--oro);
+  background: rgba(241, 196, 15, .1);
+}
+.asiento.desconectado { opacity: .45; }
+
+.ficha {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 1rem;
+  background: #0d2a1c;
+  border: 2px solid var(--borde);
+  color: var(--texto);
+  flex: none;
+}
+.asiento.enturno .ficha { border-color: var(--oro); color: var(--oro); }
+.asiento.companero .ficha { border-color: #5dade2; }
+
+/* Anillo que se vacía con el tiempo del turno. La parte pintada la marca
+   `--resto` (de 1 a 0), que la cuenta atrás actualiza cuatro veces por
+   segundo. La máscara deja sólo el borde, no el círculo relleno. */
+.ficha .reloj-anillo {
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--oro) calc(var(--resto, 1) * 360deg),
+    rgba(255, 255, 255, .12) 0
+  );
+  -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 3px), #000 calc(100% - 3px));
+  mask: radial-gradient(farthest-side, #0000 calc(100% - 3px), #000 calc(100% - 3px));
+  transition: background .25s linear;
+}
+.ficha .reloj-anillo.apurado {
+  background: conic-gradient(
+    var(--malo) calc(var(--resto, 1) * 360deg),
+    rgba(255, 255, 255, .12) 0
+  );
+  animation: latir .9s ease-in-out infinite;
+}
+@keyframes latir {
+  50% { opacity: .45; }
+}
+
+/* Los segundos que quedan, debajo de la ficha. */
+.asiento .segundos {
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: .62rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #0b1f16;
+  border: 1px solid var(--borde);
+  color: var(--oro);
+}
+.ficha .reloj-anillo.apurado ~ .segundos { color: var(--malo); border-color: var(--malo); }
+
+.asiento .nombre {
+  font-size: .74rem;
+  font-weight: 600;
+  max-width: 88px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.asiento .dato { font-size: .66rem; color: var(--tenue); }
+
+.dorsos { display: flex; height: 30px; align-items: center; }
+.dorso {
+  width: 20px;
+  height: 29px;
+  border-radius: 3px;
+  flex: none;
+  background:
+    repeating-linear-gradient(45deg, #24506e 0 3px, #1b3e57 3px 6px);
+  border: 1px solid #0d2233;
+  margin-left: -11px;
+  box-shadow: 1px 0 2px rgba(0, 0, 0, .4);
+}
+.dorso:first-child { margin-left: 0; }
+
+/* ------------------------------- centro -------------------------- */
+
+.zona-centro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.montones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-content: center;
+  width: 100%;
+}
+
+.mesa-vacia { color: rgba(255, 255, 255, .35); font-size: .8rem; font-style: italic; }
+
+/* ------------------------------- cartas -------------------------- */
+
+.naipe {
+  position: relative;
+  width: 50px;
+  height: 71px;
+  border-radius: 6px;
+  background: linear-gradient(170deg, #fffef9, #ece9dd);
+  color: #14140f;
+  border: 1px solid rgba(0, 0, 0, .3);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, .35);
+  flex: none;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  line-height: 1;
+  user-select: none;
+}
+.naipe.roja { color: #c0392b; }
+.naipe.mona {
+  background: linear-gradient(170deg, #ffe680, #e5b700);
+  border-color: #a8880a;
+}
+
+.naipe .esquina {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  font-size: .72rem;
+  letter-spacing: -.02em;
+}
+.naipe .centro { font-size: 1.5rem; font-weight: 400; }
+.naipe.mona .centro { font-size: 1.35rem; }
+
+/* ------------------------- montones de la mesa ------------------- */
+
+.monton-mesa {
+  position: relative;
+  padding: 4px;
+  border-radius: 9px;
+  border: 2px solid transparent;
+  cursor: default;
+  transition: transform .18s, border-color .18s, box-shadow .18s;
+}
+.monton-mesa .apilado { position: relative; height: 71px; }
+.monton-mesa .apilado .naipe { position: absolute; top: 0; left: 0; }
+
+.monton-mesa .sello {
+  display: block;
+  margin-top: 4px;
+  text-align: center;
+  font-size: .6rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .6);
+}
+.monton-mesa.formacion .sello { color: #f39c12; }
+.monton-mesa.fila .sello { color: #5dade2; }
+.monton-mesa.mia .sello::after { content: ' · tuya'; color: var(--oro); }
+
+.monton-mesa.jugable {
+  cursor: pointer;
+  border-color: rgba(46, 204, 113, .7);
+  box-shadow: 0 0 12px rgba(46, 204, 113, .35);
+}
+.monton-mesa.jugable:active { transform: scale(.96); }
+.monton-mesa.elegido {
+  border-color: var(--oro);
+  box-shadow: 0 0 16px rgba(241, 196, 15, .6);
+  transform: translateY(-6px);
+}
+
+/* -------------------------------- mano --------------------------- */
+
+.zona-mano { grid-area: yo; }
+
+.mi-mano {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-height: 78px;
+  align-items: flex-end;
+}
+
+.mi-mano .naipe {
+  width: 56px;
+  height: 80px;
+  cursor: default;
+  transition: transform .18s, box-shadow .18s;
+}
+.mi-mano .naipe .centro { font-size: 1.7rem; }
+.mi-mano .naipe.jugable { cursor: pointer; }
+.mi-mano .naipe.jugable:active { transform: translateY(-4px) scale(.97); }
+.mi-mano .naipe.elegida {
+  transform: translateY(-14px);
+  box-shadow: 0 0 0 3px var(--oro), 0 8px 16px rgba(0, 0, 0, .5);
+}
+.mi-mano .naipe.bloqueada {
+  /* Cuando no es tu turno las cartas se apagan, pero tienen que seguir
+     leyéndose: con opacidad baja el verde del tapete las traspasa. */
+  filter: saturate(.5) brightness(.86);
+}
+
+/* ------------------------------ acciones ------------------------- */
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.acciones button {
+  width: auto;
+  margin: 0;
+  flex: 0 1 auto;
+  padding: 11px 16px;
+  font-size: .82rem;
+}
+.btn-llevar   { background: #27ae60; border-color: #27ae60; color: #fff; }
+.btn-formar   { background: #e67e22; border-color: #e67e22; color: #fff; }
+.btn-fila     { background: #3498db; border-color: #3498db; color: #fff; }
+.btn-botar    { background: #5d6d7e; border-color: #5d6d7e; color: #fff; }
+.btn-limpiar  { background: none; border-color: var(--borde); color: var(--tenue); }
+
+.pista {
+  text-align: center;
+  font-size: .78rem;
+  color: var(--tenue);
+  min-height: 1.2em;
+}
+.pista.urgente { color: var(--oro); }
+
+/* --------------------------- aviso de jugada --------------------- */
+
+.bitacora {
+  text-align: center;
+  font-size: .76rem;
+  color: var(--tenue);
+  min-height: 1.3em;
+}
+.bitacora .wincho {
+  color: var(--oro);
+  font-weight: 700;
+  animation: destello .8s ease-out;
+}
+@keyframes destello {
+  0% { transform: scale(1.4); filter: brightness(2); }
+  100% { transform: scale(1); filter: none; }
+}
+
+/* ------------------------------ marcador ------------------------- */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .78);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  z-index: 50;
+  overflow-y: auto;
+}
+.modal .caja {
+  background: var(--panel);
+  border: 1px solid var(--borde);
+  border-radius: 14px;
+  padding: 22px;
+  max-width: 460px;
+  width: 100%;
+}
+.modal h2 { color: var(--oro); margin-bottom: 4px; }
+
+.tabla-puntos { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: .82rem; }
+.tabla-puntos th, .tabla-puntos td {
+  text-align: left;
+  padding: 7px 6px;
+  border-bottom: 1px solid var(--borde);
+}
+.tabla-puntos td:last-child, .tabla-puntos th:last-child { text-align: right; }
+.tabla-puntos tr.gana td { color: var(--oro); font-weight: 700; }
+.tabla-puntos .conceptos { font-size: .72rem; color: var(--tenue); }
+
+/* ------------------------- pantallas anchas ---------------------- */
+
+@media (min-width: 620px) {
+  .tapete { min-height: 520px; gap: 12px; padding: 18px; }
+  .naipe { width: 58px; height: 82px; }
+  .monton-mesa .apilado { height: 82px; }
+  .mi-mano .naipe { width: 66px; height: 94px; }
+  .mi-mano .naipe .centro { font-size: 2rem; }
+  .ficha { width: 46px; height: 46px; }
+  .dorso { width: 24px; height: 34px; }
+  .dorsos { height: 35px; }
+}

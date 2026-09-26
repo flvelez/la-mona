@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>La Mona - Modo Estratégico</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <aside id="info-panel">
+            <h1>LA MONA</h1>
+            <div id="turno-indicador">TURNO: J1</div>
+            <div class="stats">
+                <p>J1 (A): <span id="count-A">0</span></p>
+                <p>J2 (B): <span id="count-B">0</span></p>
+            </div>
+            <button onclick="iniciarMazo()">REINICIAR</button>
+        </aside>
+
+        <main id="board">
+            <div id="zona-j2" class="player-area"><div id="mano-j2" class="hand-row"></div></div>
+            <div id="mesa-unica" ondragover="allowDrop(event)" ondrop="dropOnMesa(event)">
+                <div id="cartas-mesa" class="card-display"></div>
+            </div>
+            <div id="zona-j1" class="player-area">
+                <div id="tu-mano" class="hand-row"></div>
+                <div class="label-jugador">MANO J1</div>
+            </div>
+        </main>
+    </div>
+
+    <div id="menu-acciones" class="menu-flotante hidden">
+        <p>¿Qué deseas hacer?</p>
+        <div class="botones-flex">
+            <button id="btn-llevar" class="btn-acc">LLEVAR</button>
+            <button id="btn-fila" class="btn-acc">FILA (Agrupar)</button>
+            <button id="btn-sumar" class="btn-acc">SUMAR (Formar)</button>
+            <button onclick="cerrarMenu()" class="btn-acc btn-cancel">CANCELAR</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+node_modules
+.git
+.github
+tests
+*.md
+.DS_Store
+*.log
+fly.toml
+# El prototipo original, que ya no se usa
+index.html
+script.js
+style.css

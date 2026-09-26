@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>La Mona</title>
+  <link rel="stylesheet" href="lobby.css">
+  <link rel="stylesheet" href="mesa.css">
+</head>
+<body>
+  <header>
+    <h1>LA MONA</h1>
+    <span id="conexion" class="chip chip-mal">Conectando…</span>
+  </header>
+
+  <div id="aviso" class="aviso" hidden></div>
+
+  <main>
+    <!-- Entrada -->
+    <section id="pantalla-entrada" class="tarjeta">
+      <label for="nombre">Tu nombre</label>
+      <input id="nombre" maxlength="16" placeholder="Ej: Fabián" autocomplete="nickname">
+
+      <div class="bloque">
+        <h2>Crear una sala</h2>
+        <div class="fila">
+          <label for="cupo">Jugadores</label>
+          <select id="cupo">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4" selected>4</option>
+          </select>
+        </div>
+        <div class="fila">
+          <label for="rondas">Rondas para ganar</label>
+          <select id="rondas"></select>
+        </div>
+        <button id="btn-crear" class="primario">CREAR SALA</button>
+      </div>
+
+      <div class="bloque">
+        <h2>Entrar a una sala</h2>
+        <input id="codigo" maxlength="5" placeholder="CÓDIGO" class="codigo-input"
+               autocapitalize="characters" autocomplete="off" spellcheck="false">
+        <button id="btn-unirse">ENTRAR</button>
+      </div>
+
+      <p id="error" class="error" hidden></p>
+    </section>
+
+    <!-- Lobby -->
+    <section id="pantalla-lobby" class="tarjeta" hidden>
+      <p class="etiqueta">Código de la sala</p>
+      <div class="codigo-grande" id="codigo-sala">----</div>
+      <button id="btn-copiar" class="enlace">Copiar código</button>
+
+      <ul id="lista-jugadores" class="jugadores"></ul>
+
+      <div id="opciones-anfitrion" hidden>
+        <div class="fila">
+          <label for="rondas-lobby">Rondas para ganar</label>
+          <select id="rondas-lobby"></select>
+        </div>
+        <label class="fila" id="fila-parejas">
+          <span>Jugar en parejas (1-3 vs 2-4)</span>
+          <input type="checkbox" id="parejas">
+        </label>
+        <button id="btn-iniciar" class="primario">EMPEZAR PARTIDA</button>
+      </div>
+      <p id="aviso-lobby" class="etiqueta"></p>
+
+      <button id="btn-salir" class="enlace">Salir de la sala</button>
+    </section>
+
+    <!-- Mesa -->
+    <section id="pantalla-mesa" hidden>
+      <div class="barra-superior">
+        <span id="info-ronda">Ronda 1</span>
+        <span id="info-rondas"></span>
+        <span id="info-mazo"></span>
+        <button id="btn-sonido" class="btn-sonido" type="button" aria-label="Sonido">🔊</button>
+      </div>
+
+      <div class="tapete">
+        <div id="asiento-arriba" class="asiento-arriba"></div>
+        <div id="asiento-izq" class="asiento-izq"></div>
+        <div id="asiento-der" class="asiento-der"></div>
+
+        <div class="zona-centro">
+          <div id="montones" class="montones"></div>
+        </div>
+
+        <div class="zona-mano">
+          <div id="mi-mano" class="mi-mano"></div>
+          <div id="mi-ficha"></div>
+        </div>
+      </div>
+
+      <p id="bitacora" class="bitacora"></p>
+
+      <div class="panel-inferior">
+        <p id="pista" class="pista"></p>
+        <div id="acciones" class="acciones"></div>
+        <button id="btn-limpiar" class="btn-limpiar" hidden>Cancelar selección</button>
+      </div>
+
+      <button id="btn-salir-mesa" class="enlace">Salir de la sala</button>
+    </section>
+
+    <!-- Marcador de fin de ronda -->
+    <div id="modal-puntaje" class="modal" hidden>
+      <div class="caja">
+        <h2 id="titulo-puntaje"></h2>
+        <div id="cuerpo-puntaje"></div>
+        <button id="btn-siguiente-ronda" class="primario">SIGUIENTE RONDA</button>
+        <button id="btn-volver-lobby" class="primario" hidden>VOLVER AL LOBBY</button>
+        <p id="espera-ronda" class="dato" hidden>Esperando al anfitrión…</p>
+        <p id="espera-lobby" class="dato" hidden>Esperando al anfitrión…</p>
+      </div>
+    </div>
+
+  </main>
+
+  <script type="module" src="lobby.js"></script>
+</body>
+</html>

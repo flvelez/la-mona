@@ -1,0 +1,22 @@
+# Despliegue en Render. Ver DESPLIEGUE.md para los pasos.
+#
+# El plan gratuito de Render no escala más allá de UNA instancia, que es justo
+# lo que este juego necesita: las salas viven en memoria del proceso y dos
+# instancias las partirían.
+
+services:
+  - type: web
+    name: la-mona
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci --omit=dev
+    startCommand: node servidor/index.js
+    healthCheckPath: /salud
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: SEGUNDOS_POR_TURNO
+        value: "45"
+      - key: MINUTOS_SALA_VACIA
+        value: "10"

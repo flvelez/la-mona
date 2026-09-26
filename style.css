@@ -1,0 +1,152 @@
+body {
+    margin: 0;
+    background: #1a1a1a;
+    color: white;
+    font-family: sans-serif;
+    overflow: hidden;
+}
+
+#game-container {
+    display: flex;
+    height: 100vh;
+}
+
+#info-panel {
+    width: 200px;
+    background: #2c3e50;
+    padding: 20px;
+    border-right: 4px solid #f1c40f;
+    text-align: center;
+}
+
+#turno-indicador {
+    background: #e67e22;
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+#board {
+    flex-grow: 1;
+    background: radial-gradient(circle, #27ae60 0%, #145a32 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.player-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hand-row {
+    display: flex;
+    gap: 10px;
+    min-height: 140px;
+}
+
+#mesa-unica {
+    flex-grow: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-display {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.carta {
+    width: 80px;
+    height: 120px;
+    background: white;
+    border-radius: 8px;
+    color: black;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border: 1px solid #ccc;
+}
+
+.carta.roja {
+    color: #e74c3c;
+}
+
+.carta.mona {
+    background: #f1c40f;
+    border: 2px solid gold;
+}
+
+.formacion-container {
+    position: relative;
+    width: 85px;
+    height: 125px;
+    cursor: pointer;
+}
+
+.formacion-container .carta {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+.seleccionada {
+    filter: drop-shadow(0 0 10px #3498db);
+    transform: scale(1.1);
+}
+
+.v-sup {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    font-size: 1.1em;
+}
+
+.suit-cen {
+    font-size: 2.3em;
+}
+
+.menu-flotante {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #000;
+    padding: 25px;
+    border: 2px solid #f1c40f;
+    z-index: 1000;
+    border-radius: 10px;
+}
+
+.hidden {
+    display: none;
+}
+
+.botones-flex {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-acc {
+    padding: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    background: #f1c40f;
+    border: none;
+    border-radius: 5px;
+}
+
+.btn-cancel {
+    background: #e74c3c;
+    color: white;
+}

@@ -1,0 +1,47 @@
+# Configuración de Fly.io para La Mona.
+#
+# IMPORTANTE: este juego debe correr en UNA SOLA máquina. Las salas se guardan
+# en memoria, así que si Fly levanta dos, dos jugadores con el mismo código
+# podrían caer en máquinas distintas y no verse. Despliega siempre con
+# `--ha=false` y comprueba con `fly status` que hay una sola.
+
+app = "la-mona"
+primary_region = "iad"   # Ashburn (EE. UU. este). `bog` quedó deprecada;
+                         # `gru` (Sao Paulo) es la alternativa sudamericana.
+
+[build]
+
+[env]
+  PORT = "3000"
+  SEGUNDOS_POR_TURNO = "45"
+  MINUTOS_SALA_VACIA = "10"
+
+[http_service]
+  internal_port = 3000
+  force_https = true          # obligatorio: el navegador exige wss:// en https
+  auto_start_machines = true
+  # Se apaga sola cuando no queda nadie y arranca al entrar el primero. Fly
+  # cuenta las conexiones abiertas (ver [http_service.concurrency] abajo), así
+  # que mientras alguien juegue con su WebSocket abierto NO se apaga: lo único
+  # que se pierde al dormirse son salas ya vacías.
+  auto_stop_machines = "stop"
+  min_machines_running = 0
+  max_machines_running = 1    # NUNCA subir de 1: se romperían las salas
+  processes = ["app"]
+
+  # Cada jugador mantiene un WebSocket abierto mientras juega.
+  [http_service.concurrency]
+    type = "connections"
+    soft_limit = 150
+    hard_limit = 200
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/salud"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
