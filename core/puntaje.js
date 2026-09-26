@@ -7,7 +7,7 @@ export const PUNTOS = {
   diezBonito: 2,
   dosBonito: 1,
   as: 1,
-  wincho: 1,
+  chupe: 1,
 };
 
 /**
@@ -28,7 +28,7 @@ export function nombreBando(bando, nombres) {
  * Puntaje de la ronda. Devuelve un desglose por bando para poder mostrarlo
  * en pantalla, no sólo el total.
  */
-export function puntuarRonda({ capturadas, winchos, numJugadores, enParejas }) {
+export function puntuarRonda({ capturadas, chupes, numJugadores, enParejas }) {
   const bandos = bandosDe(numJugadores, enParejas);
 
   const detalle = bandos.map((bando) => {
@@ -41,7 +41,7 @@ export function puntuarRonda({ capturadas, winchos, numJugadores, enParejas }) {
       diezBonito: cartas.some(esDiezBonito),
       dosBonito: cartas.some(esDosBonito),
       ases: cartas.filter(esAs).length,
-      winchos: bando.reduce((a, j) => a + winchos[j], 0),
+      chupes: bando.reduce((a, j) => a + chupes[j], 0),
       puntos: 0,
       conceptos: [],
     };
@@ -67,7 +67,7 @@ export function puntuarRonda({ capturadas, winchos, numJugadores, enParejas }) {
     if (d.diezBonito) sumar(d, PUNTOS.diezBonito, 'El 10 bonito (10♦)');
     if (d.dosBonito) sumar(d, PUNTOS.dosBonito, 'El 2 bonito (2♠)');
     if (d.ases > 0) sumar(d, d.ases * PUNTOS.as, `Ases (${d.ases})`);
-    if (d.winchos > 0) sumar(d, d.winchos * PUNTOS.wincho, `Winchos (${d.winchos})`);
+    if (d.chupes > 0) sumar(d, d.chupes * PUNTOS.chupe, `Chupes (${d.chupes})`);
   }
 
   const max = Math.max(...detalle.map((d) => d.puntos));

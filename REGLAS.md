@@ -60,14 +60,27 @@ sobre un 7 y anuncias *formando 9*.
 - Cualquiera puede **subirle el valor** (un 8 formado + un As = 9, si tiene el 9).
 - Si tienes La Mona, puedes **formar 15** para levantarlo tú mismo.
 
-### Fila
-Apilar cartas del mismo valor declarado. **Requisito: tener en la mano otra carta
+### Fila (apilar)
+Apilar sobre un mismo valor declarado. **Requisito: tener en la mano otra carta
 de ese valor.** A diferencia de una formación, **el valor de una fila no se puede
 cambiar nunca**.
 
 Ejemplo del reglamento: mesa `2 K 6 5 8`, en mano un 3 y un 8. Juegas el 3 sobre
 el 5 (=8) y juntas el 8 y el 6+2 en una sola fila de ochos — cinco cartas que
 levantas en tu siguiente turno con tu 8.
+
+**Se puede seguir apilando sobre una formación que ya existe**, sea tuya o de
+otro, y sirve para cualquier valor, **el 15 incluido**. Si formaste 15 con un 3
+y una Q, y en tu siguiente turno tienes un 6 en la mano con un 9 en la mesa,
+apilas ese 6+9 encima: quedan dos grupos de quince en la misma pila.
+
+En el mismo movimiento también entran las sumas que **ya estaban sueltas en la
+mesa**. Con una formación de 15, un 7 y un 8 sueltos, y un 9, al jugar tu 6
+sobre el 9 se apila todo: `{15}` · `{7+8}` · `{6+9}`. Lo único obligatorio es
+que **tu carta entre en alguno de los grupos**.
+
+Jugando en parejas, el compañero también puede apilar sobre la formación — en
+su propio turno, porque cada quien juega una carta en el suyo.
 
 ### La Mona
 Vale 15 y captura cualquier combinación que sume 15. Si no logras armar 15,
@@ -103,9 +116,9 @@ capturó**. Así se gana La Mona ahogada.
 | 10♦ — "el 10 bonito" | 2 |
 | 2♠ — "el 2 bonito" | 1 |
 | Cada As | 1 (4 en total) |
-| Cada **wincho** (dejar la mesa vacía) | +1 |
+| Cada **chupe** (dejar la mesa vacía) | +1 |
 
-**14 puntos base** más los winchos. Si hay empate en "más cartas" o "más
+**14 puntos base** más los chupes. Si hay empate en "más cartas" o "más
 espadas", nadie se lleva esos puntos. Gana la ronda quien más puntos sume; si
 hay empate en puntos, la ronda no se la adjudica nadie.
 

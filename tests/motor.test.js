@@ -183,11 +183,11 @@ test('se puede formar 15 si tienes La Mona en la mano', () => {
 
 /* ----------------------------- puntaje ----------------------------- */
 
-test('puntaje de ronda: 14 puntos en juego más winchos', () => {
+test('puntaje de ronda: 14 puntos en juego más chupes', () => {
   const baraja = crearBaraja();
   const r = puntuarRonda({
     capturadas: [baraja, []],
-    winchos: [2, 0],
+    chupes: [2, 0],
     numJugadores: 2,
     enParejas: false,
   });
@@ -203,7 +203,7 @@ test('empate en cartas o espadas: esos puntos no los gana nadie', () => {
   const otra = baraja.filter((c) => c.palo === 'Diamantes' || c.palo === 'Espadas');
   const r = puntuarRonda({
     capturadas: [mitad, otra.slice(0, mitad.length)],
-    winchos: [0, 0],
+    chupes: [0, 0],
     numJugadores: 2,
     enParejas: false,
   });
@@ -214,7 +214,7 @@ test('empate en cartas o espadas: esos puntos no los gana nadie', () => {
 test('en parejas los compañeros van cruzados y suman juntos', () => {
   const r = puntuarRonda({
     capturadas: [[{ palo: 'Espadas', valor: 2, mona: false }], [], [{ palo: 'Diamantes', valor: 10, mona: false }], []],
-    winchos: [0, 0, 0, 0],
+    chupes: [0, 0, 0, 0],
     numJugadores: 4,
     enParejas: true,
   });
@@ -347,4 +347,101 @@ test('una fila necesita DOS grupos: un solo grupo es una formación', () => {
   assert.ok(validarJugada(conDosSietes, 0, {
     tipo: 'fila', cartaId: 'E7', valorCarta: 7, montones: ['m0'], valor: 7,
   }).ok);
+});
+
+test('se puede seguir apilando sobre una formación propia, también de 15', () => {
+  // Caso real de una partida: formé 15 con el 3 y la Q, y en el turno
+  // siguiente tenía un 6 en la mano y un 9 en la mesa (6+9=15) para apilarlo
+  // encima. El juego no me dejaba.
+  const mona = c('MONA', 15, 'Especial', { mona: true, nombre: 'Mona' });
+  const e = escenario({
+    mano: [c('E6', 6), mona],
+    mesa: [
+      { tipo: 'formacion', valor: 15, dueño: 0 },
+      { valor: 9 },
+    ],
+  });
+
+  const r = validarJugada(e, 0, {
+    tipo: 'fila', cartaId: 'E6', valorCarta: 6, montones: ['m0', 'm1'], valor: 15,
+  });
+  assert.ok(r.ok, `debería dejar apilar: ${r.motivo}`);
+});
+
+test('apilar no se limita al 15: vale cualquier valor formado', () => {
+  const e = escenario({
+    mano: [c('E2', 2), c('E9', 9)],
+    mesa: [
+      { tipo: 'formacion', valor: 9, dueño: 0 },
+      { valor: 7 },
+    ],
+  });
+  assert.ok(validarJugada(e, 0, {
+    tipo: 'fila', cartaId: 'E2', valorCarta: 2, montones: ['m0', 'm1'], valor: 9,
+  }).ok, 'el 2 sobre el 7 son 9, y se apila sobre la formación de 9');
+});
+
+test('también se apila la formación de otro jugador', () => {
+  const e = escenario({
+    mano: [c('E4', 4), c('E10', 10)],
+    mesa: [
+      { tipo: 'formacion', valor: 10, dueño: 1 },
+      { valor: 6 },
+    ],
+  });
+  assert.ok(validarJugada(e, 0, {
+    tipo: 'fila', cartaId: 'E4', valorCarta: 4, montones: ['m0', 'm1'], valor: 10,
+  }).ok);
+});
+
+test('sin la carta que lo levante, no se puede apilar', () => {
+  const e = escenario({
+    mano: [c('E6', 6), c('E3', 3)],
+    mesa: [
+      { tipo: 'formacion', valor: 15, dueño: 0 },
+      { valor: 9 },
+    ],
+  });
+  const r = validarJugada(e, 0, {
+    tipo: 'fila', cartaId: 'E6', valorCarta: 6, montones: ['m0', 'm1'], valor: 15,
+  });
+  assert.ok(!r.ok, 'sin La Mona en la mano no debería dejar');
+  assert.match(r.motivo, /Necesitas tener un 15/);
+});
+
+test('se apilan a la vez la carta jugada y una suma que ya estaba en la mesa', () => {
+  // Mesa: formación de 15, un 7 y un 8 sueltos (que ya suman 15), y un 9.
+  // Jugando el 6 sobre el 9 se apila TODO: {15} · {7+8} · {6+9}.
+  const mona = c('MONA', 15, 'Especial', { mona: true, nombre: 'Mona' });
+  const e = escenario({
+    mano: [c('E6', 6), mona],
+    mesa: [
+      { tipo: 'formacion', valor: 15, dueño: 0 },
+      { valor: 7 },
+      { valor: 8 },
+      { valor: 9 },
+    ],
+  });
+  const r = validarJugada(e, 0, {
+    tipo: 'fila', cartaId: 'E6', valorCarta: 6,
+    montones: ['m0', 'm1', 'm2', 'm3'], valor: 15,
+  });
+  assert.ok(r.ok, `debería apilar los tres grupos: ${r.motivo}`);
+});
+
+test('la carta jugada tiene que entrar en algún grupo', () => {
+  // Mesa: formación de 15 y un 7+8 suelto. Sin nada que aporte, el 4 no cabe.
+  const mona = c('MONA', 15, 'Especial', { mona: true, nombre: 'Mona' });
+  const e = escenario({
+    mano: [c('E4', 4), mona],
+    mesa: [
+      { tipo: 'formacion', valor: 15, dueño: 0 },
+      { valor: 7 },
+      { valor: 8 },
+    ],
+  });
+  assert.ok(!validarJugada(e, 0, {
+    tipo: 'fila', cartaId: 'E4', valorCarta: 4,
+    montones: ['m0', 'm1', 'm2'], valor: 15,
+  }).ok, 'el 4 no forma 15 con nada: no debería valer');
 });

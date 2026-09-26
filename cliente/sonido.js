@@ -78,8 +78,8 @@ const TOQUES = {
   // Formar o hacer fila: una nota media, más apagada que una captura.
   formar: () => nota(392, { duracion: 0.13, volumen: 0.1, tipo: 'triangle' }),
 
-  // Wincho: arpegio alegre, es la jugada que más se celebra.
-  wincho: () => {
+  // Chupe: arpegio alegre, es la jugada que más se celebra.
+  chupe: () => {
     [523, 659, 784, 1047].forEach((hz, i) =>
       nota(hz, { inicio: i * 0.075, duracion: 0.2, volumen: 0.13 }));
   },
@@ -111,7 +111,7 @@ function vibrar(patron) {
 
 const VIBRACIONES = {
   llevar: [18, 40, 25],
-  wincho: [25, 50, 25, 50, 45],
+  chupe: [25, 50, 25, 50, 45],
   turno: [30],
   carta: [12],
 };

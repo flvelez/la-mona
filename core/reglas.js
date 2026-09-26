@@ -172,7 +172,11 @@ function validarFormar(estado, jugador, carta, valorCarta, montones, valor) {
 
 function validarFila(estado, jugador, carta, valorCarta, montones, valor) {
   if (carta.mona) return no('La Mona no hace fila');
-  if (!Number.isInteger(valor) || valor < 2 || valor > 14) {
+  // Hasta 15: se puede seguir apilando grupos de 15 sobre una formación de 15
+  // (un 6 de la mano sobre un 9 de la mesa, por ejemplo). No hacen falta dos
+  // cartas de quince — los grupos están en la mesa y basta con tener La Mona
+  // en la mano para levantarlos después.
+  if (!Number.isInteger(valor) || valor < 2 || valor > VALOR_MONA) {
     return no('Valor de fila inválido');
   }
   if (montones.length === 0) return no('Una fila necesita al menos un montón');

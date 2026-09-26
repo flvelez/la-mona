@@ -161,7 +161,7 @@ export class Mesa {
 
     if (eventoNuevo) {
       this.ultimoEventoPintado = evento;
-      if (evento.wincho) tocar('wincho');
+      if (evento.chupe) tocar('chupe');
       else if (evento.tipo === 'capturar') tocar('llevar');
       else if (evento.tipo === 'abierto') tocar('carta');
       else tocar('formar');
@@ -279,7 +279,7 @@ export class Mesa {
       <div class="ficha">${reloj}${inicial}</div>
       <span class="nombre">${escapar(p.config.nombres[j])}${soyYo ? ' (tú)' : ''}${companero ? ' 🤝' : ''}</span>
       ${soyYo ? '' : `<div class="dorsos">${'<span class="dorso"></span>'.repeat(p.cartasPorJugador[j])}</div>`}
-      <span class="dato">${p.capturadasPorJugador[j]} ganadas${p.winchos[j] ? ` · ${p.winchos[j]} 🧹` : ''}</span>
+      <span class="dato">${p.capturadasPorJugador[j]} ganadas${p.chupes[j] ? ` · ${p.chupes[j]} 🧹` : ''}</span>
     `;
     return div;
   }
@@ -396,7 +396,7 @@ export class Mesa {
     if (e.automatica) texto += ' (se le acabó el tiempo)';
 
     $('bitacora').innerHTML = escapar(texto) +
-      (e.wincho ? ' <span class="wincho">¡WINCHO!</span>' : '');
+      (e.chupe ? ' <span class="chupe">¡CHUPE!</span>' : '');
   }
 
   /* ------------------------ fin de ronda / partida ------------------ */

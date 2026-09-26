@@ -65,7 +65,7 @@ export function iniciarRonda(partida) {
   partida.tanda = 0;
   partida.manos = Array.from({ length: numJugadores }, () => []);
   partida.capturadas = Array.from({ length: numJugadores }, () => []);
-  partida.winchos = new Array(numJugadores).fill(0);
+  partida.chupes = new Array(numJugadores).fill(0);
   partida.ultimoEnCapturar = null;
   partida.fase = 'jugando';
   partida.turno = (partida.repartidor + 1) % numJugadores;
@@ -105,7 +105,7 @@ export function jugar(partida, jugador, jugada) {
 
   partida.manos[jugador] = partida.manos[jugador].filter((c) => c.id !== carta.id);
 
-  const evento = { jugador, tipo: jugada.tipo, carta, valorCarta, wincho: false };
+  const evento = { jugador, tipo: jugada.tipo, carta, valorCarta, chupe: false };
 
   if (jugada.tipo === 'abierto') {
     partida.mesa.push(montonSuelto(carta));
@@ -116,8 +116,8 @@ export function jugar(partida, jugador, jugada) {
     partida.ultimoEnCapturar = jugador;
     evento.capturadas = botin.length;
     if (partida.mesa.length === 0) {
-      partida.winchos[jugador] += 1;
-      evento.wincho = true;
+      partida.chupes[jugador] += 1;
+      evento.chupe = true;
     }
   } else {
     // formar / fila: los montones se funden en uno solo, con dueño.
@@ -167,7 +167,7 @@ function cerrarRonda(partida) {
 
   const resultado = puntuarRonda({
     capturadas: partida.capturadas,
-    winchos: partida.winchos,
+    chupes: partida.chupes,
     numJugadores: partida.config.numJugadores,
     enParejas: partida.config.enParejas,
   });
@@ -214,7 +214,7 @@ export function vistaPara(partida, jugador) {
     miMano: partida.manos[jugador],
     cartasPorJugador: partida.manos.map((m) => m.length),
     capturadasPorJugador: partida.capturadas.map((c) => c.length),
-    winchos: partida.winchos,
+    chupes: partida.chupes,
     mesa: partida.mesa,
     cartasEnMazo: partida.mazo.length,
     ultimoEnCapturar: partida.ultimoEnCapturar,
