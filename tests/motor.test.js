@@ -394,11 +394,26 @@ test('también se apila la formación de otro jugador', () => {
   }).ok);
 });
 
-test('sin la carta que lo levante, no se puede apilar', () => {
+test('al formar, la carta queda comprometida: puedes seguir apilando en tu pila', () => {
+  // Formaste 15 con La Mona en la mano. Aunque después te quedaras sin una
+  // carta de ese valor, la pila ya es tuya y puedes seguir apilando encima.
   const e = escenario({
     mano: [c('E6', 6), c('E3', 3)],
     mesa: [
       { tipo: 'formacion', valor: 15, dueño: 0 },
+      { valor: 9 },
+    ],
+  });
+  assert.ok(validarJugada(e, 0, {
+    tipo: 'fila', cartaId: 'E6', valorCarta: 6, montones: ['m0', 'm1'], valor: 15,
+  }).ok);
+});
+
+test('sobre una pila ajena sí hace falta tener la carta', () => {
+  const e = escenario({
+    mano: [c('E6', 6), c('E3', 3)],
+    mesa: [
+      { tipo: 'formacion', valor: 15, dueño: 1 },
       { valor: 9 },
     ],
   });
@@ -444,4 +459,112 @@ test('la carta jugada tiene que entrar en algún grupo', () => {
     tipo: 'fila', cartaId: 'E4', valorCarta: 4,
     montones: ['m0', 'm1', 'm2'], valor: 15,
   }).ok, 'el 4 no forma 15 con nada: no debería valer');
+});
+
+/* --------------------- apilar jugando en parejas -------------------- */
+
+function escenarioParejas({ manos, mesa, turno = 0 }) {
+  return {
+    fase: 'jugando',
+    turno,
+    manos,
+    mesa: mesaDe(mesa),
+    config: { numJugadores: 4, enParejas: true },
+  };
+}
+
+test('el compañero apila sobre la formación del equipo sin tener la carta', () => {
+  // Compañeros cruzados: 0 y 2. El jugador 0 formó 15 porque tiene La Mona.
+  // Ahora el 2, con un 6 y un 9 en la mesa, apila encima aunque él no la tenga.
+  const e = escenarioParejas({
+    turno: 2,
+    manos: [[], [], [c('E6', 6), c('E4', 4)], []],
+    mesa: [{ tipo: 'formacion', valor: 15, dueño: 0 }, { valor: 9 }],
+  });
+  const r = validarJugada(e, 2, {
+    tipo: 'fila', cartaId: 'E6', valorCarta: 6, montones: ['m0', 'm1'], valor: 15,
+  });
+  assert.ok(r.ok, `el compañero debería poder apilar: ${r.motivo}`);
+});
+
+test('un rival no apila sobre esa formación si no tiene la carta', () => {
+  const e = escenarioParejas({
+    turno: 1,
+    manos: [[], [c('E6', 6), c('E4', 4)], [], []],
+    mesa: [{ tipo: 'formacion', valor: 15, dueño: 0 }, { valor: 9 }],
+  });
+  const r = validarJugada(e, 1, {
+    tipo: 'fila', cartaId: 'E6', valorCarta: 6, montones: ['m0', 'm1'], valor: 15,
+  });
+  assert.ok(!r.ok, 'el rival no tiene La Mona: no debería poder');
+});
+
+test('la carta del equipo no se presta si no hay formación suya de ese valor', () => {
+  // Sin una formación del equipo ya hecha, el compañero necesita su carta:
+  // primero forma quien la tiene, después apila el compañero.
+  const e = escenarioParejas({
+    turno: 2,
+    manos: [[], [], [c('E6', 6), c('E4', 4)], []],
+    mesa: [{ valor: 9 }, { valor: 15, valores: [15] }],
+  });
+  const r = validarJugada(e, 2, {
+    tipo: 'fila', cartaId: 'E6', valorCarta: 6, montones: ['m0', 'm1'], valor: 15,
+  });
+  assert.ok(!r.ok, 'todavía nadie del equipo ha formado 15');
+});
+
+test('jugando individual nadie presta la carta', () => {
+  const e = escenario({
+    mano: [c('E6', 6), c('E4', 4)],
+    mesa: [{ tipo: 'formacion', valor: 15, dueño: 1 }, { valor: 9 }],
+  });
+  assert.ok(!validarJugada(e, 0, {
+    tipo: 'fila', cartaId: 'E6', valorCarta: 6, montones: ['m0', 'm1'], valor: 15,
+  }).ok);
+});
+
+test('la mesa ofrece el botón al compañero, no sólo a quien tiene la carta', () => {
+  const e = escenarioParejas({
+    turno: 2,
+    manos: [[], [], [c('E6', 6), c('E4', 4)], []],
+    mesa: [{ tipo: 'formacion', valor: 15, dueño: 0 }, { valor: 9 }],
+  });
+  const acciones = accionesPara(e, 2, 'E6', ['m0', 'm1']);
+  assert.ok(acciones.some((a) => a.tipo === 'fila' && a.valor === 15),
+    `debería ofrecerlo: ${JSON.stringify(acciones)}`);
+});
+
+test('al levantar se llevan TODAS las formaciones de ese valor, no sólo una', () => {
+  // Dos formaciones de 9 por separado, más un 4 y un 5 sueltos: un 9 se lleva
+  // las tres cosas de una vez.
+  const e = escenario({
+    mano: [c('E9', 9)],
+    mesa: [
+      { tipo: 'formacion', valor: 9, dueño: 1 },
+      { tipo: 'formacion', valor: 9, dueño: 0 },
+      { valor: 4 },
+      { valor: 5 },
+    ],
+  });
+  assert.ok(validarJugada(e, 0, {
+    tipo: 'capturar', cartaId: 'E9', valorCarta: 9,
+    montones: ['m0', 'm1', 'm2', 'm3'],
+  }).ok);
+});
+
+test('La Mona también se lleva varias formaciones de 15 a la vez', () => {
+  const mona = c('MONA', 15, 'Especial', { mona: true, nombre: 'Mona' });
+  const e = escenario({
+    mano: [mona],
+    mesa: [
+      { tipo: 'formacion', valor: 15, dueño: 0 },
+      { tipo: 'fila', valor: 15, dueño: 1 },
+      { valor: 7 },
+      { valor: 8 },
+    ],
+  });
+  assert.ok(validarJugada(e, 0, {
+    tipo: 'capturar', cartaId: 'MONA', valorCarta: 15,
+    montones: ['m0', 'm1', 'm2', 'm3'],
+  }).ok);
 });

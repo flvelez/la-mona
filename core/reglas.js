@@ -27,6 +27,33 @@ export function tieneEnMano(estado, jugador, valor, exceptoId) {
   );
 }
 
+/**
+ * ¿Son del mismo bando? Con 4 jugadores en parejas los compañeros van
+ * cruzados (0-2 y 1-3), que es lo mismo que decir "igual paridad".
+ */
+export function mismoBando(estado, a, b) {
+  if (a == null || b == null) return false;
+  if (a === b) return true;
+  if (!estado.config?.enParejas || estado.config?.numJugadores !== 4) return false;
+  return a % 2 === b % 2;
+}
+
+/**
+ * Valores que el jugador puede apilar sin tener la carta en su mano: los de
+ * las pilas que ya formó su equipo.
+ *
+ * Jugando en parejas la carta se comparte, pero con un orden: primero forma
+ * quien la tiene, y sólo entonces el compañero puede seguir apilando encima.
+ * Por eso mira las pilas ya hechas, no las manos.
+ */
+export function valoresPrestadosPorElEquipo(estado, jugador) {
+  const valores = new Set();
+  for (const m of estado.mesa) {
+    if (m.tipo !== 'suelta' && mismoBando(estado, jugador, m.dueño)) valores.add(m.valor);
+  }
+  return valores;
+}
+
 /** Formaciones y filas propias que el jugador tiene comprometidas en la mesa. */
 export function formacionesPropias(estado, jugador) {
   return estado.mesa.filter((m) => m.tipo !== 'suelta' && m.dueño === jugador);
@@ -180,7 +207,12 @@ function validarFila(estado, jugador, carta, valorCarta, montones, valor) {
     return no('Valor de fila inválido');
   }
   if (montones.length === 0) return no('Una fila necesita al menos un montón');
-  if (!tieneEnMano(estado, jugador, valor, carta.id)) {
+  // Se puede apilar teniendo la carta… o sobre una pila que ya formó tu
+  // compañero: en parejas la carta es del equipo una vez que está en juego.
+  const prestada = montones.some(
+    (m) => m.tipo !== 'suelta' && m.valor === valor && mismoBando(estado, jugador, m.dueño),
+  );
+  if (!prestada && !tieneEnMano(estado, jugador, valor, carta.id)) {
     return no(`Necesitas tener un ${valor} en la mano para hacer fila de ${valor}`);
   }
 
@@ -278,9 +310,10 @@ export function jugadasLegales(estado, jugador = estado.turno, opciones = {}) {
   for (const carta of cartas) {
     // Valores que el jugador conserva en mano: los únicos a los que puede
     // formar o hacer fila, porque necesita la carta que los levante.
-    const valoresEnMano = new Set(
-      mano.filter((c) => c.id !== carta.id).flatMap(valoresDe),
-    );
+    const valoresEnMano = new Set([
+      ...mano.filter((c) => c.id !== carta.id).flatMap(valoresDe),
+      ...valoresPrestadosPorElEquipo(estado, jugador),
+    ]);
 
     for (const valorCarta of valoresDe(carta)) {
       agregar({ tipo: 'abierto', cartaId: carta.id, valorCarta });
@@ -309,9 +342,10 @@ export function accionesPara(estado, jugador, cartaId, montonesIds) {
   if (!carta) return [];
 
   const mano = estado.manos[jugador];
-  const valoresEnMano = [...new Set(
-    mano.filter((c) => c.id !== cartaId).flatMap(valoresDe),
-  )];
+  const valoresEnMano = [...new Set([
+    ...mano.filter((c) => c.id !== cartaId).flatMap(valoresDe),
+    ...valoresPrestadosPorElEquipo(estado, jugador),
+  ])];
 
   const acciones = [];
   const probar = (jugada) => {

@@ -79,8 +79,19 @@ mesa**. Con una formación de 15, un 7 y un 8 sueltos, y un 9, al jugar tu 6
 sobre el 9 se apila todo: `{15}` · `{7+8}` · `{6+9}`. Lo único obligatorio es
 que **tu carta entre en alguno de los grupos**.
 
-Jugando en parejas, el compañero también puede apilar sobre la formación — en
-su propio turno, porque cada quien juega una carta en el suyo.
+**Jugando en parejas la carta se comparte, pero con un orden**: primero forma
+quien la tiene, y sólo entonces el compañero puede seguir apilando encima, aunque
+él no la tenga. Si tú formaste 15 porque tienes La Mona, tu compañero puede
+apilar un 6 sobre un 9 de la mesa sin tenerla. Cada quien lo hace en su turno.
+
+Sobre pilas de los rivales sí hace falta tener la carta. Y una vez formada, la
+carta queda comprometida a la pila: puedes seguir apilando en la tuya.
+
+### Levantar varias pilas a la vez
+
+Al levantar te llevas **todas** las pilas de ese valor, no sólo una. Si hay dos
+formaciones de 9 por separado, más un 4 y un 5 sueltos, un solo 9 se lleva las
+tres cosas. Lo mismo La Mona con varias pilas de 15.
 
 ### La Mona
 Vale 15 y captura cualquier combinación que sume 15. Si no logras armar 15,
